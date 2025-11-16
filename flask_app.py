@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, unquote, urlparse
 import base64
 import re
+from threading import Thread
 
 app = Flask(__name__)
 
@@ -101,3 +102,10 @@ def proxy():
 
     # その他（画像・CSSなど）
     return Response(resp.content, content_type=content_type)
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()

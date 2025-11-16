@@ -1,4 +1,4 @@
-from flask_app import app
+from flask_app import keep_alive
 
 if __name__ == '__main__':
-    app.run()
+    keep_alive()
