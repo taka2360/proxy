@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Proxy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #e0e0e0;
+      overflow: hidden;
+    }
+
+    /* 背景アニメーション */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.3;
+      animation: float 8s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    .bg-orb:nth-child(1) {
+      width: 400px; height: 400px;
+      background: #7f5af0;
+      top: -100px; left: -100px;
+      animation-delay: 0s;
+    }
+    .bg-orb:nth-child(2) {
+      width: 300px; height: 300px;
+      background: #2cb67d;
+      bottom: -80px; right: -80px;
+      animation-delay: 2s;
+    }
+    .bg-orb:nth-child(3) {
+      width: 250px; height: 250px;
+      background: #e16162;
+      top: 50%; left: 60%;
+      animation-delay: 4s;
+    }
+    @keyframes float {
+      0%   { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(30px, -30px) scale(1.1); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 600px;
+      width: 90%;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      background: linear-gradient(90deg, #7f5af0, #2cb67d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: #94a1b2;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .input-group {
+      display: flex;
+      gap: 0;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: border-color 0.3s;
+    }
+    .input-group:focus-within {
+      border-color: #7f5af0;
+      box-shadow: 0 0 0 3px rgba(127, 90, 240, 0.2);
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 16px 20px;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      background: rgba(255, 255, 255, 0.05);
+      border: none;
+      color: #fffffe;
+      outline: none;
+    }
+    input[type="text"]::placeholder {
+      color: #72757e;
+    }
+
+    button {
+      padding: 16px 28px;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, #7f5af0, #6246c7);
+      color: #fff;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    button:hover {
+      background: linear-gradient(135deg, #9171f8, #7f5af0);
+      box-shadow: 0 4px 15px rgba(127, 90, 240, 0.4);
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .info {
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: #72757e;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+
+  <div class="container">
+    <h1>🌐 Web Proxy</h1>
+    <p class="subtitle">URLを入力してウェブを自由にブラウズしよう</p>
+    <div class="card">
+      <form id="proxy-form" action="/p/" method="get" onsubmit="return handleSubmit(event)">
+        <div class="input-group">
+          <input type="text" id="url-input" name="url" placeholder="https://example.com" autocomplete="off" autofocus>
+          <button type="submit">アクセス</button>
+        </div>
+      </form>
+      <p class="info">
+        URLを入力するとプロキシ経由でアクセスします<br>
+        JavaScript・CSS・画像など全てのリソースに対応
+      </p>
+    </div>
+  </div>
+
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      const url = document.getElementById('url-input').value.trim();
+      if (!url) return false;
+      // http(s)がない場合は自動補完
+      let targetUrl = url;
+      if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+        targetUrl = 'https://' + targetUrl;
+      }
+      // Base64URLエンコード
+      const encoded = btoa(unescape(encodeURIComponent(targetUrl)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      window.location.href = '/p/' + encoded;
+      return false;
+    }
+  </script>
+</body>
+</html>
